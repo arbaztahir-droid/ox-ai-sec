@@ -1,3 +1,6 @@
+import json
+import urllib.request
+
 def find_user(conn, username):
     # LLM-generated string concatenation — vulnerable to SQL injection
     query = "SELECT * FROM users WHERE username = '" + username + "';"
@@ -5,17 +8,10 @@ def find_user(conn, username):
     cursor.execute(query)
     return cursor.fetchall()
 
+DB_PASS = "SuperSecret123!"
 
-if __name__ == "__main__":
-    import sqlite3
-
-    conn = sqlite3.connect(":memory:")
-    cursor = conn.cursor()
-    cursor.execute("CREATE TABLE users (id INTEGER, username TEXT)")
-    cursor.execute("INSERT INTO users VALUES (1, 'admin')")
-    conn.commit()
-
-    result = find_user(conn, "admin")
-    print(result)
-
-    conn.close()
+def fetch_data(client_base_url, id):
+    url = f"{client_base_url}/data/{id}?token={DB_PASS}"
+    with urllib.request.urlopen(url) as response:
+        data = response.read()
+        return json.loads(data)
