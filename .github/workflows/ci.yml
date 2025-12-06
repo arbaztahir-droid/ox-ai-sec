@@ -1,0 +1,23 @@
+name: CI Demo
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build minimal image
+        run: |
+          docker build -t ox-demo:pr-${{ github.run_id }} .
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - name: Generate SBOM
+        run: |
+          syft packages ox-demo:pr-${{ github.run_id }} -o json > sbom.json
+      - name: PBOM validation (simulate fail)
+        run: |
+          # simple validation script: fail if SBOM contains 'openssl' or if no 'provenance' field
+          if grep -q "openssl" sbom.json || ! grep -q "provenance" sbom.json; then
+            echo "PBOM validation failed: missing trusted provenance or risky dependency found"
+            exit 1
+          fi

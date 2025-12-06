@@ -8,6 +8,7 @@ def find_user(conn, username):
     cursor.execute(query)
     return cursor.fetchall()
 
+
 DB_PASS = "SuperSecret123!"
 
 def fetch_data(client_base_url, id):
